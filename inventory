@@ -1,0 +1,7 @@
+[haproxy_keepalived]
+haproxy_master ansible_host=192.168.56.102
+haproxy_backup ansible_host=192.168.56.103
+
+[nginx_web_servers]
+ilovehafifa ansible_host=192.168.56.104
+iloveclouds ansible_host=192.168.56.105
