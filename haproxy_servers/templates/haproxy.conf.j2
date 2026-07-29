@@ -30,7 +30,7 @@ defaults
 
 frontend http_front
   bind *:80
-{% for host in groups['nginx_web_servers'] %}
+{% for host in groups['nginx_webservers'] %}
   acl host_{{ host }} hdr(host) -i {{ host }}.com
   use_backend {{ host }} if host_{{ host }}
 {% endfor %}
@@ -39,13 +39,13 @@ frontend http_front
 frontend https_front
   bind *:443
   mode http
-{% for host in groups['nginx_web_servers'] %}
+{% for host in groups['nginx_webservers'] %}
   acl host_{{ host }} hdr(host) -i {{ host }}.com
   use_backend {{ host }} if host_{{ host }}
 {% endfor %}
   default_backend webservers
 
-{% for host in groups['nginx_web_servers'] %}
+{% for host in groups['nginx_webservers'] %}
 backend {{ host }}
   mode http
   server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
@@ -54,6 +54,6 @@ backend {{ host }}
 backend webservers
   mode http
   balance roundrobin
-{% for host in groups['nginx_web_servers'] %}
+{% for host in groups['nginx_webservers'] %}
   server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
 {% endfor %}

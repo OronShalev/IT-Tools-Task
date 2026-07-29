@@ -2,7 +2,7 @@
 haproxy_master ansible_host=192.168.56.102 keepalived_role=MASTER
 haproxy_backup ansible_host=192.168.56.103 keepalived_role=BACKUP
 
-[nginx_web_servers]
+[nginx_webservers]
 ilovehafifa ansible_host=192.168.56.104
 iloveclouds ansible_host=192.168.56.105
 

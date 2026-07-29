@@ -43,38 +43,3 @@
     mode: '0644'
   become: true
 
-- name: Generate sites private key
-  community.crypto.openssl_privatekey:
-    path: /etc/ssl/private/{{ item }}.key
-    size: 4096
-    type: RSA
-    mode: '0600'
-  become: true
-  loop: "{{ groups['nginx_webservers'] }}"
-
-- name: Generate CSR for sites
-  community.crypto.openssl_csr:
-    path: "/etc/ssl/certs/{{ item }}.csr"
-    privatekey_path: "/etc/ssl/private/{{ item }}.key"
-    country_name: "IL"
-    state_or_province_name: "Center"
-    locality_name: "Modiin"
-    organization_name: "Oron Corp Ltd"
-    common_name: "{{ item }}.com"
-    subject_alt_name:
-      - "DNS:{{ item }}.com"
-  become: true
-  loop: "{{ groups['nginx_webservers'] }}"
-
-- name: Sign the CSR with the CA
-  community.crypto.openssl_certificate:
-    path: "/etc/ssl/certs/{{ item }}.crt"
-    privatekey_path: "/etc/ssl/private/{{ inventory_hostname }}.key"
-    csr_path: "/etc/ssl/certs/{{ item }}.csr"
-    provider: ca
-    ca_path: "/etc/ssl/certs/{{ inventory_hostname }}.crt"
-    ca_privatekey_path: "/etc/ssl/private/{{ inventory_hostname }}.key"
-    not_after: "+365d"
-    mode: '0644'
-  become: true
-  loop: "{{ groups['nginx_webservers'] }}"

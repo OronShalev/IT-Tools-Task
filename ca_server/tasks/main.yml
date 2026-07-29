@@ -3,5 +3,5 @@
 - name: configure CA server
   ansible.builtin.include_tasks: configure_ca_server.yml
 
-# - name: 
-#   ansible.builtin.include_tasks: 
+- name: generate certificates for nginx webservers
+  ansible.builtin.include_tasks: generate_certificates.yml
