@@ -1,0 +1,5 @@
+---
+- name: Create haproxy servers
+  hosts: haproxy_keepalived
+  roles:
+    - haproxy_servers
