@@ -1,11 +1,14 @@
 ---
-- name: Create certificate directory
+- name: Create certificate directories
   ansible.builtin.file:
-    path: "/etc/ssl/private"
+    path: "{{ item.path }}"
     state: directory
     owner: root
     group: root
-    mode: '0700'
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/ssl/private, mode: '0700' }
+    - { path: /etc/ssl/certs, mode: '0755' }
   become: true
 
 - name: Generate CA private key
@@ -26,11 +29,9 @@
     organization_name: "Oron Corp Ltd"
     common_name: "custom.cert.com"
     subject_alt_name:
-{% for host in groups['nginx_web_servers'] %}
-      - DNS:{{ host }}.com
-{% endfor %}
+      - "DNS:custom.cert.com"
+      - "IP:{{ ansible_default_ipv4.address }}"
   become: true
-
 
 - name: Generate self-signed certificate
   community.crypto.x509_certificate:

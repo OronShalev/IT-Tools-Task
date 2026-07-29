@@ -1,8 +1,20 @@
 ---
-- name: Install Nginx
-  ansible.builtin.package:
-    name: nginx
-    state: present
+- name: Ensure SSL directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/ssl/private, mode: '0700' }
+    - { path: /etc/ssl/certs, mode: '0755' }
+  become: true
+
+- name: Nginx configuration file
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
   become: true
 
 - name: Start and enable Nginx service
@@ -10,12 +22,6 @@
     name: nginx
     state: started
     enabled: true
-  become: true
-
-- name: Copy Nginx configuration file
-  ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: /etc/nginx/nginx.conf
   become: true
 
 - name: Allow HTTP and HTTPS traffic through the firewall
