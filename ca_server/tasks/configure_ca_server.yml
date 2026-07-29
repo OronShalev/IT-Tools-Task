@@ -25,6 +25,10 @@
     locality_name: "Modiin"
     organization_name: "Oron Corp Ltd"
     common_name: "custom.cert.com"
+    subject_alt_name:
+{% for host in groups['nginx_web_servers'] %}
+      - DNS:{{ host }}.com
+{% endfor %}
   become: true
 
 

@@ -21,6 +21,16 @@
     enabled: true
   become: true
 
+- name: Allow VRRP traffic through the firewall
+  ansible.builtin.firewalld:
+    rich_rule: 'rule protocol value="vrrp" accept'
+    permanent: true
+    immediate: true
+    state: enabled
+  become: true
+  notify:
+    - Reload firewalld
+
 - name: Allow HTTP and HTTPS traffic through the firewall
   ansible.builtin.firewalld:
     service: "{{ item }}"
