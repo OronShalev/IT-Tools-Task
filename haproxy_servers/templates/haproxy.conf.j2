@@ -35,7 +35,6 @@ frontend http_front
 frontend https_front
   bind *:443
   mode tcp
-  # inspect TLS ClientHello to extract SNI for routing (TLS passthrough)
   tcp-request inspect-delay 5s
   tcp-request content accept if { req_ssl_hello_type 1 }
 {% for host in groups['nginx_webservers'] %}
