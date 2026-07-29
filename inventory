@@ -8,7 +8,3 @@ iloveclouds ansible_host=192.168.56.105
 
 [ca_server]
 localhost_ca ansible_host=localhost
-
-[ca_clients:children]
-haproxy_keepalived
-nginx_web_servers
