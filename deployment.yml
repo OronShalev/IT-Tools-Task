@@ -1,0 +1,5 @@
+---
+- include_playbook: ca_server.yml
+- include_playbook: nginx_webservers.yml
+- include_playbook: haproxy_servers.yml
+- include_playbook: keepalived_servers.yml
