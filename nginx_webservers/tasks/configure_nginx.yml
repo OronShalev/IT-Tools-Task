@@ -1,4 +1,10 @@
 ---
+- name: install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+  become: true
+
 - name: Ensure SSL directories exist
   ansible.builtin.file:
     path: "{{ item.path }}"
@@ -11,52 +17,17 @@
     - { path: /etc/ssl/certs, mode: '0755' }
   become: true
 
-- name: Install crypto prerequisites
-  ansible.builtin.yum:
-    name:
-      - python3-cryptography
-      - python3-pyOpenSSL
-    state: present
-  become: true
-
-- name: Generate private key for web site
-  community.crypto.openssl_privatekey:
-    path: /etc/ssl/private/{{ inventory_hostname }}.key
-    size: 4096
-    type: RSA
-    mode: '0600'
-  become: true
-
-- name: Create CSR for web site
-  community.crypto.openssl_csr_pipe:
-    privatekey_path: /etc/ssl/private/{{ inventory_hostname }}.key
-    subject_alt_name:
-      - "DNS:{{ inventory_hostname }}.com"
-      - "DNS:{{ inventory_hostname }}"
-      - "IP:{{ ansible_host }}"
-  register: csr
-  become: true
-
-- name: Sign the CSR with the CA
-  community.crypto.x509_certificate_pipe:
-    csr_content: "{{ csr.csr }}"
-    provider: ownca
-    ownca_path: /etc/ssl/certs/ca.crt
-    ownca_privatekey_path: /etc/ssl/private/ca.key
-    ownca_not_before: "-1d"
-    ownca_not_after: "+365d"
-  delegate_to: "{{ groups['ca_server'][0] }}"
-  register: signed_certificate
-  become: true
-
-- name: Write signed certificate to web server
+- name: Copy key and certificate files to Nginx servers
   ansible.builtin.copy:
-    dest: /etc/ssl/certs/{{ inventory_hostname }}.crt
-    content: "{{ signed_certificate.certificate }}"
+    src: "/home/automation/ssl/{{ item }}"
+    dest: "/etc/ssl/{{ item }}"
     owner: root
     group: root
     mode: '0644'
   become: true
+  loop:
+    - private/{{ inventory_hostname }}.key
+    - certs/{{ inventory_hostname }}.crt
 
 - name: Nginx configuration file
   ansible.builtin.template:
