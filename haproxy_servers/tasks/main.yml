@@ -14,30 +14,6 @@
   notify:
     - Reload Haproxy
 
-- name: Ensure haproxy chroot directory exists
-  ansible.builtin.file:
-    path: /var/lib/haproxy
-    state: directory
-    owner: haproxy
-    group: haproxy
-    mode: '0755'
-  become: true
-
-- name: Remove stale HAProxy stats socket
-  ansible.builtin.file:
-    path: /var/lib/haproxy/stats
-    state: absent
-  become: true
-
-- name: Ensure /run/haproxy directory exists for stats socket
-  ansible.builtin.file:
-    path: /run/haproxy
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  become: true
-
 - name: Start and enable Haproxy service
   ansible.builtin.service:
     name: haproxy
