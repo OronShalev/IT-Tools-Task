@@ -1,0 +1,64 @@
+---
+- name: create SSL directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: automation
+    group: automation
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /home/automation/ssl/private, mode: '0700' }
+    - { path: /home/automation/ssl/certs, mode: '0755' }
+  become: true
+
+- name: Generate sites private key
+  community.crypto.openssl_privatekey:
+    path: /home/automation/ssl/private/{{ item }}.key
+    size: 4096
+    type: RSA
+    mode: '0600'
+  become: true
+  loop: "{{ groups['nginx_webservers'] }}"
+
+- name: Generate CSR for sites
+  community.crypto.openssl_csr:
+    path: "/home/automation/ssl/certs/{{ item }}.csr"
+    privatekey_path: "/home/automation/ssl/private/{{ item }}.key"
+    country_name: "IL"
+    state_or_province_name: "Center"
+    locality_name: "Modiin"
+    organization_name: "Oron Corp Ltd"
+    common_name: "{{ item }}.com"
+    subject_alt_name:
+      - "DNS:{{ item }}.com"
+  become: true
+  loop: "{{ groups['nginx_webservers'] }}"
+
+- name: Sign the CSR with the CA
+  community.crypto.openssl_certificate:
+    path: "/home/automation/ssl/certs/{{ item }}.crt"
+    privatekey_path: "/home/automation/ssl/private/{{ item }}.key"
+    csr_path: "/home/automation/ssl/certs/{{ item }}.csr"
+    provider: ownca
+    ownca_path: "/etc/ssl/certs/{{ inventory_hostname }}.crt"
+    ownca_privatekey_path: "/etc/ssl/private/{{ inventory_hostname }}.key"
+    ownca_not_after: "+365d"
+    mode: '0644'
+  become: true
+  loop: "{{ groups['nginx_webservers'] }}"
+
+- name: Chang e ownership of the generated certificates
+  ansible.builtin.file:
+    path: "/home/automation/ssl/certs/{{ item }}.crt"
+    owner: automation
+    group: automation
+  become: true
+  loop: "{{ groups['nginx_webservers'] }}"
+
+- name: Change ownership of the generated private keys
+  ansible.builtin.file:
+    path: "/home/automation/ssl/private/{{ item }}.key"
+    owner: automation
+    group: automation
+  become: true
+  loop: "{{ groups['nginx_webservers'] }}"

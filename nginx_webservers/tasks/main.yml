@@ -1,0 +1,7 @@
+---
+# tasks file for nginx_webservers
+- name: Configure Nginx web server
+  ansible.builtin.include_tasks: configure_nginx.yml
+
+- name: Create HTML content for the web server
+  ansible.builtin.include_tasks: create_html_content.yml

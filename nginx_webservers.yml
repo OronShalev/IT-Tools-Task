@@ -1,0 +1,5 @@
+---
+- name: Create nginx webservers
+  hosts: nginx_webservers
+  roles:
+    - nginx_webservers

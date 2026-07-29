@@ -1,0 +1,13 @@
+---
+# handlers file for keepalived-servers
+- name: Reload firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
+  become: true
+
+- name: Reload Keepalived
+  ansible.builtin.service:
+    name: keepalived
+    state: restarted
+  become: true

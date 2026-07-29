@@ -1,0 +1,25 @@
+global_defs {
+  router_id {{ keepalived_role}}
+}
+
+vrrp_script chk_haproxy {
+  script "pidof haproxy"
+  interval 2
+  weight 2
+}
+
+vrrp_instance VI_MYSQL {
+  state {{ keepalived_role}}
+  interface eth1
+  virtual_router_id 51
+  priority {{ '101' if keepalived_role == 'MASTER' else '100' }}
+  advert_int 1
+
+  virtual_ipaddress {
+    192.168.56.100/24
+  }
+
+  track_script {
+    chk_haproxy
+  }
+}

@@ -1,0 +1,56 @@
+---
+- name: install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+  become: true
+
+- name: Ensure SSL directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/ssl/private, mode: '0700' }
+    - { path: /etc/ssl/certs, mode: '0755' }
+  become: true
+
+- name: Copy key and certificate files to Nginx servers
+  ansible.builtin.copy:
+    src: "/home/automation/ssl/{{ item }}"
+    dest: "/etc/ssl/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  loop:
+    - private/{{ inventory_hostname }}.key
+    - certs/{{ inventory_hostname }}.crt
+
+- name: Nginx configuration file
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  become: true
+
+- name: Start and enable Nginx service
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow HTTP and HTTPS traffic through the firewall
+  ansible.builtin.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop:
+    - http
+    - https
+  become: true
+  notify:
+    - Reload firewalld

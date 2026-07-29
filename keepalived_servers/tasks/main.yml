@@ -1,0 +1,35 @@
+---
+# tasks file for keepalived-servers
+- name: Install Keepalived
+  ansible.builtin.package:
+    name: keepalived
+    state: present
+  become: true
+  
+- name: Copy Keepalived configuration file
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  become: true
+  notify:
+    - Reload Keepalived
+
+- name: Start and enable Keepalived service
+  ansible.builtin.service:
+    name: keepalived
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow HTTP and HTTPS traffic through the firewall
+  ansible.builtin.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop:
+    - http
+    - https
+  become: true
+  notify:
+    - Reload firewalld

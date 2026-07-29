@@ -1,0 +1,45 @@
+---
+# tasks file for haproxy_servers
+- name: Install Haproxy
+  ansible.builtin.package:
+    name: haproxy
+    state: present
+  become: true
+  
+- name: Copy Haproxy configuration file
+  ansible.builtin.template:
+    src: haproxy.conf.j2
+    dest: /etc/haproxy/haproxy.cfg
+  become: true
+  notify:
+    - Reload Haproxy
+
+- name: Start and enable Haproxy service
+  ansible.builtin.service:
+    name: haproxy
+    state: started
+    enabled: true
+  become: true
+
+- name: Allow VRRP traffic through the firewall
+  ansible.builtin.firewalld:
+    rich_rule: 'rule protocol value="vrrp" accept'
+    permanent: true
+    immediate: true
+    state: enabled
+  become: true
+  notify:
+    - Reload firewalld
+
+- name: Allow HTTP and HTTPS traffic through the firewall
+  ansible.builtin.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop:
+    - http
+    - https
+  become: true
+  notify:
+    - Reload firewalld
