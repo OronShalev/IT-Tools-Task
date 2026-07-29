@@ -1,0 +1,31 @@
+---
+- name: Install Nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+  become: true
+
+- name: Start and enable Nginx service
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  become: true
+
+- name: Copy Nginx configuration file
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  become: true
+
+- name: Allow HTTP and HTTPS traffic through the firewall
+  ansible.builtin.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - http
+    - https
+  become: true
+  notify:
+    - Reload firewalld

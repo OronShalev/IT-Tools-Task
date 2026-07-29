@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{{ ansible_host }}</title>
+    <style>
+        h1 {
+        color: darkblue;
+        text-align: center;
+        font-size: 100px;
+        }
+        p {
+        color: brown;
+        text-align: center;
+        font-size: 50px;
+        }
+        html {
+        background-color: lightgray;
+        }
+    </style>
+  </head>
+  <body>
+    <h1>{{ inventory_hostname }}</h1>
+    <p>The best site in the world!</p>
+  </body>
+</html>

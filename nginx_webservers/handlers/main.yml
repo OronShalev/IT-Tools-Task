@@ -1,0 +1,13 @@
+---
+# handlers file for nginx_webservers
+- name: Reload firewalld
+  ansible.builtin.service:
+    name: firewalld
+    state: restarted
+  become: true
+
+- name: Reload Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+  become: true
