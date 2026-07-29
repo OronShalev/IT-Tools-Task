@@ -30,30 +30,22 @@ defaults
 
 frontend http_front
   bind *:80
-{% for host in groups['nginx_webservers'] %}
-  acl host_{{ host }} hdr(host) -i {{ host }}.com
-  use_backend {{ host }} if host_{{ host }}
-{% endfor %}
-  default_backend webservers
+  redirect scheme https code 301 if !{ ssl_fc }
 
 frontend https_front
   bind *:443
-  mode http
+  mode tcp
+  # inspect TLS ClientHello to extract SNI for routing (TLS passthrough)
+  tcp-request inspect-delay 5s
+  tcp-request content accept if { req_ssl_hello_type 1 }
 {% for host in groups['nginx_webservers'] %}
-  acl host_{{ host }} hdr(host) -i {{ host }}.com
+  acl host_{{ host }} req.ssl_sni -i {{ host }}.com
   use_backend {{ host }} if host_{{ host }}
 {% endfor %}
-  default_backend webservers
 
 {% for host in groups['nginx_webservers'] %}
 backend {{ host }}
-  mode http
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
-{% endfor %}
-
-backend webservers
-  mode http
-  balance roundrobin
-{% for host in groups['nginx_webservers'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
+  mode tcp
+  balance leastconn
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check
 {% endfor %}
