@@ -1,0 +1,5 @@
+---
+- name: Create ca server
+  hosts: ca_server
+  roles:
+    - ca_server

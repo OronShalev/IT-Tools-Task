@@ -1,0 +1,39 @@
+---
+- name: Create certificate directory
+  ansible.builtin.file:
+    path: "/etc/ssl/private"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  become: true
+
+- name: Generate CA private key
+  ansible.builtin.openssl_privatekey:
+    path: /etc/ssl/private/{{ inventory_hostname }}.key
+    size: 4096
+    type: RSA
+    mode: '0600'
+  become: true
+
+- name: Generate CSR
+  community.crypto.openssl_csr:
+    path: "/etc/ssl/certs/{{ inventory_hostname }}.csr"
+    privatekey_path: "/etc/ssl/private/{{ inventory_hostname }}.key"
+    country_name: "IL"
+    state_or_province_name: "Center"
+    locality_name: "Modiin"
+    organization_name: "Oron Corp Ltd"
+    common_name: "custom.cert.com"
+  become: true
+
+
+- name: Generate self-signed certificate
+  community.crypto.x509_certificate:
+    path: "/etc/ssl/certs/{{ inventory_hostname }}.crt"
+    privatekey_path: "/etc/ssl/private/{{ inventory_hostname }}.key"
+    csr_path: "/etc/ssl/certs/{{ inventory_hostname }}.csr"
+    provider: selfsigned
+    selfsigned_not_after: "+365d"
+    mode: '0644'
+  become: true

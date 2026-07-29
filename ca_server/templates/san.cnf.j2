@@ -1,0 +1,21 @@
+[req]
+default_bits       = 4096
+prompt             = no
+default_md         = sha256
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+
+[req_distinguished_name]
+C  = IL
+ST = Center
+L  = Modiin
+O  = Oron Corp Ltd
+CN = custom.cert.nginx.com
+
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+{% for host in groups['nginx_web_servers'] %}
+DNS.{{ loop.index }} = {{ host }}.com
+{% endfor %}
